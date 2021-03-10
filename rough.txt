@@ -1,0 +1,184 @@
+
+
+
+Glist is: [{'sample2': tensor([0.5254, 0.1013])}, {'sample2': tensor([0.5254, 0.1013])}]
+
+
+
+
+Program 1 testing 
+
+learning rate = 1/(t+10)
+
+30 seconds/per iteration
+
+
+(base) Naomis-Air:HW4 n6graham$ python graph_based_sampling.py 
+[{}, {'V': ['observe3', 'observe4', 'sample2'], 'A': {'sample2': ['observe3', 'observe4']}, 'P': {'sample2': ['sample*', ['normal', 1, ['sqrt', 5]]], 'observe3': ['observe*', ['normal', 'sample2', ['sqrt', 2]], 8], 'observe4': ['observe*', ['normal', 'sample2', ['sqrt', 2]], 9]}, 'Y': {'observe3': 8, 'observe4': 9}}, 'sample2']
+L is  20000
+T is  100
+x is  tensor([-8.4161, -2.5336], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([  6.97073539, -15.45364172])}
+norm of gradient: 16.953058553789923
+results on iteration 0 are  {'sample2': Normal(loc: 1.6970734596252441, scale: 2.236067771911621)}
+the max gradient is  16.953058553789923
+x is  tensor([ 8.9217, 12.1445], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.21953987, -3.15478598])}
+norm of gradient: 4.507561598476801
+results on iteration 1 are  {'sample2': Normal(loc: 1.9897589683532715, scale: 1.0231287479400635)}
+the max gradient is  4.507561598476801
+x is  tensor([-1.1754, -1.7429], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([5.75698546, 2.75499515])}
+norm of gradient: 6.382231572173669
+results on iteration 2 are  {'sample2': Normal(loc: 2.4695076942443848, scale: 0.8491225242614746)}
+the max gradient is  6.382231572173669
+x is  tensor([ 2.9007, 13.1582], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.92632183, 0.88437705])}
+norm of gradient: 5.005074379738515
+results on iteration 3 are  {'sample2': Normal(loc: 2.8484554290771484, scale: 0.9868590831756592)}
+the max gradient is  5.005074379738515
+x is  tensor([-8.7273, -0.4959], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.38980813, 1.17124634])}
+norm of gradient: 4.543372470927235
+results on iteration 4 are  {'sample2': Normal(loc: 3.162013053894043, scale: 1.0300683975219727)}
+the max gradient is  4.543372470927235
+x is  tensor([ 0.9967, 12.5277], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.89872927, 2.45435919])}
+norm of gradient: 5.479181279673401
+results on iteration 5 are  {'sample2': Normal(loc: 3.4885950088500977, scale: 1.0846601724624634)}
+the max gradient is  5.479181279673401
+x is  tensor([  88.1880, -178.5740], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.31846675, -5.56479386])}
+norm of gradient: 6.479132059477403
+results on iteration 6 are  {'sample2': Normal(loc: 3.6959991455078125, scale: 1.195916771888733)}
+the max gradient is  6.479132059477403
+x is  tensor([-5.4920,  6.9795], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.73411131, 0.35956043])}
+norm of gradient: 4.747746162592247
+results on iteration 7 are  {'sample2': Normal(loc: 3.9744763374328613, scale: 0.9666056036949158)}
+the max gradient is  4.747746162592247
+x is  tensor([-8.8007, -1.1517], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 5.19690348, -1.63171835])}
+norm of gradient: 5.447046037814876
+results on iteration 8 are  {'sample2': Normal(loc: 4.263193130493164, scale: 0.9797637462615967)}
+the max gradient is  5.447046037814876
+x is  tensor([11.7947,  4.9092], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([3.83405674, 2.49847891])}
+norm of gradient: 4.576285386015764
+results on iteration 9 are  {'sample2': Normal(loc: 4.464985370635986, scale: 0.9241135120391846)}
+the max gradient is  4.576285386015764
+x is  tensor([-6.8363,  3.5789], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([2.86519945, 3.63119547])}
+norm of gradient: 4.625467369978407
+results on iteration 10 are  {'sample2': Normal(loc: 4.608245372772217, scale: 1.0054723024368286)}
+the max gradient is  4.625467369978407
+x is  tensor([-1.4138, 10.2824], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.86342773, -2.36790259])}
+norm of gradient: 4.531339367396902
+results on iteration 11 are  {'sample2': Normal(loc: 4.792218208312988, scale: 1.1243623495101929)}
+the max gradient is  4.531339367396902
+x is  tensor([ 3.3833, 10.5460], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.98949038, 4.74959055])}
+norm of gradient: 6.888659132139999
+results on iteration 12 are  {'sample2': Normal(loc: 5.019013404846191, scale: 1.049647569656372)}
+the max gradient is  6.888659132139999
+x is  tensor([-3.1095,  8.7466], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 5.00828192, -3.97551845])}
+norm of gradient: 6.394343959878079
+results on iteration 13 are  {'sample2': Normal(loc: 5.236764907836914, scale: 1.1951438188552856)}
+the max gradient is  6.394343959878079
+x is  tensor([20.0053, -6.9820], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([3.12113141, 3.88740493])}
+norm of gradient: 4.9853162755221705
+results on iteration 14 are  {'sample2': Normal(loc: 5.366812229156494, scale: 1.0778319835662842)}
+the max gradient is  4.9853162755221705
+x is  tensor([ 1.4990, 10.5448], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 4.40524933, -0.24701061])}
+norm of gradient: 4.412169065303928
+results on iteration 15 are  {'sample2': Normal(loc: 5.543022155761719, scale: 1.1875739097595215)}
+the max gradient is  4.412169065303928
+x is  tensor([-1.9682,  8.9538], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.23422861, 1.60063941])}
+norm of gradient: 4.526669685803607
+results on iteration 16 are  {'sample2': Normal(loc: 5.705877304077148, scale: 1.1807169914245605)}
+the max gradient is  4.526669685803607
+x is  tensor([12.4776,  4.4305], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([3.10909672, 3.2494676 ])}
+norm of gradient: 4.497279410638245
+results on iteration 17 are  {'sample2': Normal(loc: 5.821029186248779, scale: 1.2237765789031982)}
+the max gradient is  4.497279410638245
+x is  tensor([ 35.4454, -33.4258], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([5.3771041 , 0.68175972])}
+norm of gradient: 5.420151730896569
+results on iteration 18 are  {'sample2': Normal(loc: 6.013068675994873, scale: 1.3102083206176758)}
+the max gradient is  5.420151730896569
+x is  tensor([-1.9437,  8.9751], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 6.37551365, -3.3871859 ])}
+norm of gradient: 7.219432290068856
+results on iteration 19 are  {'sample2': Normal(loc: 6.232913970947266, scale: 1.3280466794967651)}
+the max gradient is  7.219432290068856
+x is  tensor([0.5525, 9.4972], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.58709303, 4.27453049])}
+norm of gradient: 6.2700106338107275
+results on iteration 20 are  {'sample2': Normal(loc: 6.385817050933838, scale: 1.2435510158538818)}
+the max gradient is  6.2700106338107275
+x is  tensor([-5.2935,  4.4411], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.02528577, 1.01403206])}
+norm of gradient: 4.1510464413697985
+results on iteration 21 are  {'sample2': Normal(loc: 6.515665054321289, scale: 1.3469891548156738)}
+the max gradient is  4.1510464413697985
+x is  tensor([-4.6467,  5.4472], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.36552894, -3.5627779 ])}
+norm of gradient: 4.901037791565272
+results on iteration 22 are  {'sample2': Normal(loc: 6.620837688446045, scale: 1.371296763420105)}
+the max gradient is  4.901037791565272
+x is  tensor([10.9497,  4.6671], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([1.61972197, 1.86481928])}
+norm of gradient: 2.4700304048678166
+results on iteration 23 are  {'sample2': Normal(loc: 6.669919967651367, scale: 1.2894097566604614)}
+the max gradient is  2.4700304048678166
+x is  tensor([8.9951, 6.7399], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.89947764, -1.25246438])}
+norm of gradient: 4.095679779639433
+results on iteration 24 are  {'sample2': Normal(loc: 6.784610271453857, scale: 1.330670714378357)}
+the max gradient is  4.095679779639433
+x is  tensor([-7.3844, -2.4630], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 4.51342688, -3.40752062])}
+norm of gradient: 5.655282398425795
+results on iteration 25 are  {'sample2': Normal(loc: 6.913565158843994, scale: 1.3037022352218628)}
+the max gradient is  5.655282398425795
+x is  tensor([-1.0696,  7.7608], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.752277  , -1.00790197])}
+norm of gradient: 3.885286229071837
+results on iteration 26 are  {'sample2': Normal(loc: 7.017795085906982, scale: 1.233730673789978)}
+the max gradient is  3.885286229071837
+x is  tensor([17.1314, -6.1166], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([4.51523488, 0.85881092])}
+norm of gradient: 4.596183437646073
+results on iteration 27 are  {'sample2': Normal(loc: 7.139828681945801, scale: 1.2139675617218018)}
+the max gradient is  4.596183437646073
+x is  tensor([-3.4012,  5.2071], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([2.87335625, 0.08222696])}
+norm of gradient: 2.8745325579782937
+results on iteration 28 are  {'sample2': Normal(loc: 7.215443134307861, scale: 1.2303407192230225)}
+the max gradient is  2.8745325579782937
+x is  tensor([-8.0085, -8.2395], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 4.66583572, -4.6186779 ])}
+norm of gradient: 6.565227223259503
+results on iteration 29 are  {'sample2': Normal(loc: 7.335080146789551, scale: 1.231872797012329)}
+the max gradient is  6.565227223259503
+x is  tensor([4.8179, 5.8819], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([3.04489555, 0.28854858])}
+norm of gradient: 3.0585370958694056
+results on iteration 30 are  {'sample2': Normal(loc: 7.411202430725098, scale: 1.1494683027267456)}
+the max gradient is  3.0585370958694056
+x is  tensor([-0.5149,  6.4477], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([ 3.13434246, -0.92145718])}
+norm of gradient: 3.2669842361313055
+results on iteration 31 are  {'sample2': Normal(loc: 7.487649917602539, scale: 1.1544023752212524)}
+the max gradient is  3.2669842361313055
+x is  tensor([0.7733, 6.4799], grad_fn=<MulBackward0>)
+returning ghat: {'sample2': array([2.55129933, 1.76986997])}
+norm of gradient: 3.1050874351723947
+results on iteration 32 are  {'sample2': Normal(loc: 7.548395156860352, scale: 1.1390674114227295)}
+the max gradient is  3.1050874351723947
