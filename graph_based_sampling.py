@@ -8,6 +8,9 @@ import seaborn as sns
 from torch.distributions import Uniform, Normal
 from torch.distributions.transforms import CatTransform
 from distributions import *
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 from daphne import daphne
 import numpy as np
@@ -36,7 +39,8 @@ def deterministic_eval(exp):
     elif type(exp) is torch.Tensor:
         return exp
     elif type(exp) is bool:
-        return torch.tensor(exp, requires_grad=True)
+        return torch.tensor(exp)
+        #return torch.tensor(exp, requires_grad=True)
     else:
         print("expression is:", exp)
         print(type(exp))
@@ -92,34 +96,30 @@ def sample_from_joint(graph,sigma):
         if keyword == "sample*":
             link_expr = links[node][1] #e, expression to evaluate for sampling
             link_expr = plugin_parent_values(link_expr, trace) 
+            
             dist_obj  = deterministic_eval(link_expr) #prior!!!
-            #print("dist_obj is", dist_obj) #aka p
             c,g = grad_log_prob(dist_obj)
+            
             trace[node] = c #updating the trace
-            #trace[node] = dist_obj.sample() #updating the trace
+            
             if node not in list(Q.keys()): #won't execute if Q is populated
                 Q[node] = dist_obj #initialize proposal using prior
-                # not sure if I should update the trace here
             else:
-                #c = dist_obj.sample()
-                #trace[node] = c # not sure if I should do this
                 G[node]=g
-                #G[node] = dist_obj.log_prob(c).backward() #modifying sigma
                 logWv = dist_obj.log_prob(c) - Q[node].log_prob(c)
+                #logWv = dist_obj.log_prob(torch.tensor(float(c))) - Q[node].log_prob(torch.tensor(float(c)))
+                #logWv = dist_obj.log_prob(c) - Q[node].log_prob(torch.tensor(c))
                 sigma['logW'] = sigma['logW'] + logWv #modifying sigma
+        
         elif keyword == "observe*": #(observe v e_1 e_2) v=node
-            #trace[node] = obs[node]
-            #print("node is", node)
             link_expr1 = links[node][1] #e_1
-            #print("link_expr1:", link_expr1)
-            #print("trace is: ", trace)
             link_expr1 = plugin_parent_values(link_expr1,trace)
-            #print("link_expr1:", link_expr1)
             dist_obj = deterministic_eval(link_expr1)
             link_expr2 = links[node][2] #e_2
             link_expr2 = plugin_parent_values(link_expr2,trace)
             c = deterministic_eval(link_expr2)
             sigma['logW'] = sigma['logW'] + dist_obj.log_prob(c)
+            #sigma['logW'] = sigma['logW'] + dist_obj.log_prob(torch.tensor(float(c)))
     
     expr = plugin_parent_values(expr, trace)
 
@@ -184,6 +184,8 @@ def print_tensor(tensor):
 def grad_log_prob(dist):
     dist = dist.make_copy_with_grads()
     c = dist.sample()
+    #c = dist.sample()
+    #lp = dist.log_prob(torch.tensor(c))
     lp = dist.log_prob(c)
     lp.backward()
     return c, torch.tensor([v.grad for v in dist.Parameters()])
@@ -213,14 +215,14 @@ def BBVI(graph,T,L):
             print("norm of gradient:", np.linalg.norm(ghat[v]))
             i = 0
             for params in d.Parameters():
-                params.data = params.data + ghat[v][i]/(t+10)
+                params.data = params.data + ghat[v][i]/(t+10) #best for program 1
+                #params.data = params.data + ghat[v][i]/((t+1)*100) #best for program 2
+                #params.data = params.data + ghat[v][i]/((t+1)*100) #best for program 4?
                 #params.data = params.data + ghat[v][i]/((t+1)*10)
                 i = i+1
         #print("q after update is", q)
 
         max_norm = np.max([ np.linalg.norm(ghat[v]) for v,d in q.items()])
-
-
 
 
 
@@ -233,7 +235,6 @@ def BBVI(graph,T,L):
         ghat = {}
         U = list(set([u for G in Glist for u in G]))
 
-
         for v in U:
             # get number of parameters for v
             for i in range(0,L):
@@ -244,7 +245,7 @@ def BBVI(graph,T,L):
             for i in range(0,L):
                 if v in list(Glist[i].keys()):
                     x = Glist[i][v]*logWlist[i]
-                    if i == (L-1): print("x is ", x)
+                    #if i == (L-1): print("x is ", x)
                     Flist[i][v] = x 
                 else:
                     Flist[i][v] = torch.tensor([0 for j in range(num_params)])
@@ -259,62 +260,86 @@ def BBVI(graph,T,L):
             varG = [ np.var(np.array(Gv[:,j])) for j in range(num_params) ]
             denom = sum(varG)
             
-            C = np.array([ np.cov(Fv[:,j],Gv[:,j], bias=True) for j in range(num_params) ])
-            numerator = np.array([ np.sum(C[j]) for j in range(num_params) ])
-
+            C = np.array([ np.cov(Fv[:,j],Gv[:,j], rowvar=True) for j in range(num_params) ])
+            cov = [ C[j][1][0] for j in range(num_params) ]
+            numerator = sum(cov)
             bhat = numerator/denom
+
             ghat[v] = sum( np.divide((Fv - bhat*np.array(Gv)),L) )
 
 
-        print("returning ghat:", ghat)
+        #print("returning ghat:", ghat)
 
         return ghat
     
 
-    #Q = {**P} #not sure about this
-    #sigma = {'Q':Q, 'logW':0, 'G':{} } 
-    sigma = {'Q':{}, 'logW':0, 'G':{} } 
-    #G = sigma['G']
-    #logW = sigma['logW']
-    
+
+    sigma = {'Q':{}, 'logW':0, 'G':{} }     
     weighted_samples = []
 
     for t in range(0,T): # T is the number of iterations
         Glist = []
         logWlist = []
+        ELBOlist = []
+        
         # here we compute a batch of gradients
         for l in range(0,L): # L is the batch size
             sigma['logW']=0
-            # first we get the trace and update sigma using sample from joint
-            val_l, sigma_l, trace_l = sample_from_joint(graph,sigma)
-            # then we get the deterministic expression using the trace
-            deterministic_expr = plugin_parent_values(expr,trace_l)
-            # then we get the value r from calling deterministic eval
-            #print("deterministic_expr", deterministic_expr)
-            r_l = deterministic_eval(deterministic_expr)
+            r_l, sigma_l, trace_l = sample_from_joint(graph,sigma)
             G_l = copy.deepcopy(sigma_l['G'])
             logW_l = sigma_l['logW']
             Glist.append(G_l)
             logWlist.append(logW_l)
 
+            weighted_samples.append((r_l,logW_l))
 
+        ELBO = sum(logWlist)
+        ELBOlist.append(ELBO)
+        print("ELBO is", ELBO)
 
         ghat = elbo_grad(Glist,logWlist)
 
         sigma['Q'], max_norm = optimizer_step( sigma['Q'],ghat,t) #update the proposal
         print("results on iteration {} are ".format(t), sigma['Q'])
         print("the max gradient is ", max_norm )
-        weighted_samples.append((r_l,logW_l))
-
-    #for t in range(N):
-
-
-
+        
 
     print("sigma['Q'] is ",sigma['Q'])
 
-    return weighted_samples
+    return weighted_samples, sigma['Q'],ELBOlist
+
     
+    proposal = {**sigma['Q']}
+    print(proposal)
+
+    weighted_samples_ = []
+    sigma_t = {'Q':proposal, 'logW':0, 'G':{}}
+
+    for t in range(T*10):
+        #for l in range(0,L): # L is the batch size
+        val_t, sigma_t, trace_t = sample_from_joint(graph,sigma_t)
+        logW_t = torch.tensor(sigma_t['logW'].item())
+        #print("logW_t is", logW_t)
+        weighted_samples_.append((val_t,logW_t))
+        sigma_t['logW'] = torch.tensor(0.0)
+        #weighted_samples_.append((r_t,logW_t))
+        #weighted_samples_.append(list((r_l,logW_l)))
+
+    return weighted_samples_, proposal
+    
+
+
+def normalize(ret):
+    weights = []
+    samples = []
+    for s, w in ret:
+        samples.append(s)
+        weights.append(w)
+    weights = torch.exp(torch.stack(weights))
+    sum_weights = torch.sum(weights)
+    return samples, weights / sum_weights
+
+
 
 
 def compute_expectation(weighted_samples):
@@ -325,10 +350,10 @@ def compute_expectation(weighted_samples):
     L = len(weighted_samples)
     log_weights = [weighted_samples[i][1] for i in range(0,L)]
     weights = np.exp(np.array(log_weights))
-    print(weights)
+    #print(weights)
     r = [ weighted_samples[i][0] for i in range(0,L)]
     denom = sum(weights)
-    print("denominator is", denom)
+    #print("denominator is", denom)
     numerator = sum( [r[i] * weights[i] for i in range(0,L) ])
     #numerator = sum( [weighted_samples[i][0] * weighted_samples[i][1] for i in range(0,L) ])
 
@@ -336,123 +361,16 @@ def compute_expectation(weighted_samples):
 
 
 def compute_variance(weighted_samples, mu):
-
     L = len(weighted_samples)
     log_weights = [weighted_samples[i][1] for i in range(0,L)]
     weights = np.exp(np.array(log_weights))
     r = [ weighted_samples[i][0] for i in range(0,L)]
     denom = sum(weights)
     numerator = sum( [ (torch.square(r[i]) - torch.square(mu)) * weights[i] for i in range(0,L) ])
+    
     #numerator = sum( [ ( weighted_samples[i][0].long() - torch.square(expectation) ) * weighted_samples[i][1] for i in range(0,L) ] )
     return numerator/denom
 
-
-'''
-
-def MH_Gibbs(graph, numsamples):
-    model = graph[1]
-    vertices = model['V']
-    arcs = model['A']
-    links = model['P'] # link functions aka P
-
-    # sort vertices for ancestral sampling
-    V_sorted = topological_sort(vertices,arcs)
-
-    def accept(x, cX, cXnew, Q):
-        # compute acceptance ratio to decide whether
-        # we keep cX or accept a new sample/trace cXnew
-        # cX and cXnew are the proposal mappings (dictionaries)
-        # which assign values to latent variables
-
-        # cXnew corresponds to the values for the new samples
-
-        # take the proposal distribution for the current vertex
-        # this is Q(x)
-        Qx = Q[x][1]
-
-        # we will sample from this with respect to cX and cXnew
-
-        # the difference comes from how we evaluate parents 
-        # plugging into eval
-        p = plugin_parent_values(Qx,cX)
-        pnew = plugin_parent_values(Qx,cXnew)
-
-        # p = Q(x)[X := \mathcal X]
-        # p' = Q(x)[X := \mathcal X']
-        # note that in this case we only need to worry about
-        # the parents of x to sample from the proposal
-
-
-        # evaluate 
-        d = deterministic_eval(p) # d = EVAL(p)
-        dnew = deterministic_eval(pnew) #d' = EVAL(p')
-
-
-        ### compute acceptance ratio ###
-
-        # initialize log alpha
-
-        logAlpha = dnew.log_prob(cXnew[x]) - d.log_prob(cX[x])
-
-        ### V_x = {x} \cup {v:x \in PA(v)} ###
-        startindex = V_sorted.index(x)
-        Vx = V_sorted[startindex:]
-
-        # compute alpha
-        for v in Vx:
-            Pv = links[v] 
-            v_exp = plugin_parent_values(Pv,cX) 
-            dv_new = deterministic_eval(v_exp_new[1])
-            #same as we did for p and pnew
-            v_exp_new = plugin_parent_values(Pv,cXnew)
-            dv_new = deterministic_eval(v_exp_new[1])
-            dv = deterministic_eval(v_exp[1])
-            
-            ## change below
-            logAlpha = logAlpha + dv_new.log_prob(cXnew[v])
-            logAlpha = logAlpha - dv.log_prob(cX[v])
-        return torch.exp(logAlpha)
-
-    
-    def Gibbs_step(cX,Q):
-        # here we need a list of the latent (unobserved) variables
-        Xobsv = list(filter(lambda v: links[v][0] == "sample*", V_sorted))
-        #print("Xobsv", Xobsv)
-
-        #print("cX inside gibb-step is", cX)
-        for u in Xobsv:
-            # here we are doing the step
-            # d <- EVAL(Q(u) [X := \cX]) 
-            # note it suffices to consider only the non-observed variables
-            Qu = Q[u][1]
-            u_exp = plugin_parent_values(Qu,cX)
-            dist_u = deterministic_eval(u_exp).sample()
-            cXnew = {**cX}
-            cX[u] = dist_u
-
-            #compute acceptance ratio
-            alpha = accept(u,cX,cXnew,Q)
-            val = Uniform(0,1).sample()
-
-            if val < alpha:
-                cX = cXnew
-        return cX
-
-
-    Q = links # initialize the proposal with P (i.e. using the prior)
-    cX_list = [ sample_from_joint(graph)[2] ] # initialize the state/trace
-
-    for i in range(1,numsamples):
-        cX_0 = {**cX_list[i-1]} #make a copy of the trace
-        cX = Gibbs_step(cX_0,Q)
-        cX_list.append(cX)
-    
-    samples = list(map(lambda cX: deterministic_eval(plugin_parent_values(graph[2], cX)), cX_list))
-    #samples = [ deterministic_eval(plugin_parent_values(graph[2],X)) for X in cX_list ]
-
-    return samples
-
-'''
 
 '''
 def compute_log_joint(sorted_nodes, links, trace_dict):
@@ -470,25 +388,69 @@ if __name__ == '__main__':
     #run_deterministic_tests()
     #run_probabilistic_tests()
     
-    T = 10
-    L = 20000
+    #T = 60 #for program 1
+
+    T = 100
+
+    #L = 20000
+    #L = 200 #for program 1
+    #L = 2000 #for program 2
+    L = 200 #for program 4?
 
 
-    graph = daphne(['graph','-i','../HW3/programs/1.daphne'])
-    print(graph)
+    #graph = daphne(['graph','-i','../HW3/programs/1.daphne'])
+    graph = daphne(['graph','-i','../HW3/programs/2.daphne'])
+    #graph = daphne(['graph','-i','../HW4/programs/4.daphne'])
+    #graph = daphne(['graph','-i','../HW4/programs/4.daphne'])
+    #print(graph)
     print("L is ", L)
     print("T is ", T)
 
     #samples = BBVI(graph,100,8000)
-    samples = BBVI(graph,T,L)
+  
 
-    M = T/4
+    weighted_samples, proposal, ELBO = BBVI(graph,T,L)
 
-    print("M is", M)
 
-    tail_index = L*M
+    print("proposal is:", proposal)
 
-    tail_samples = samples[tail_index:]
+    dim = len(list(weighted_samples))
+    N = dim - 200
+    tail = list(weighted_samples)[N:]
+    samples, normalized_weights = normalize(tail)
+    samples = torch.stack(samples)
+    mean = torch.sum(samples * normalized_weights)
+    variance = torch.sum(samples**2 * normalized_weights) - mean**2
+    print("Mean: ", mean, "Variance: ", variance)
+
+    #figH,axH = plt.subplots()
+    #axH.hist(samples)
+    #figH.savefig('../HW4/p1histogram',dpi = 150)
+
+
+    #fig,ax = plt.subplots()
+    #ax.plot(ELBO)
+    #fig.savefig('../HW4/p1ELBO',dpi = 150)
+
+    #print(weighted_samples)
+
+    #mean = compute_expectation(weighted_samples)
+
+    #print("posterior mean is", mean )
+
+    #var = compute_variance(weighted_samples,mean)
+
+    #print("posterior variance is", var)
+
+    #samples = torch.stack(samples)
+    #samples = np.array(samples)
+    #samples = samples.detach().numpy()
+
+
+
+    
+
+
 
     
 

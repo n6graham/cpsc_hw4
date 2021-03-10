@@ -140,7 +140,7 @@ PRIMITIVES = {
     "mat-repmat": repmat,
     "mat-mul": matmul,
     "if": lambda cond, v1, v2: v1 if cond else v2, # for graph based sampling
-    "flip":bernoulli,
+    "flip":Bernoulli,
     "and":and_,
     "or":or_,
     "dirac":dirac
