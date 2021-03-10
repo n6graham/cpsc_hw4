@@ -236,7 +236,9 @@
 	\date{\today}
 	\maketitle
 	
-	All the code can be found on: \url{https://github.com/n6graham/cpsc532_hw4}.
+	All the code can be found on: \url{https://github.com/n6graham/cpsc_hw4}.
+	
+	Sadly, again, I ran out of time for plotting, but I really think my code works well in theory!
 	
 		\section{BBVI code}
 		
@@ -250,12 +252,14 @@
 		
 		For example, In program 1, my variational posterior ended up being:
 			\begin{lstlisting}[language=Python]
-			sigma['Q'] is  {'sample2': Normal(loc: 8.311932563781738, scale: 1.0169004201889038)}
+			sigma['Q'] is  {'sample2': Normal(loc: 7.149489402770996, scale: 0.9122980237007141)}
 			\end{lstlisting}
 		
 		But the posterior mean and variance returned by importance sampling were:
 		
-		tensor(1.7418) Variance:  tensor(2.1257)
+		Mean: 1.3713
+		Variance: 3.5675.
+		
 		
 		\subsection{Code}
 		
@@ -381,6 +385,10 @@
 	\includegraphics[scale=0.6]{p1_variational}
 	\end{figure}
 	
+	\begin{figure}[h]
+	\includegraphics[scale=0.7]{program1}
+	\end{figure}
+	
 	\newpage 
 	But the sampled values look wrong:
 	
@@ -388,26 +396,31 @@
 	\includegraphics[scale=0.7]{p1histogram.png}
 	\end{figure}
 	
+
+
 	\newpage
 	
+
+	
 	\section{Program2}
+		Again we can see that the optimized proposal is looking correct.
 	\begin{figure}[h]
+	\includegraphics[scale=0.7]{p2proposal}
 	\end{figure}
 	
 	\newpage
 	
 	\section{Program3}
-	
-	\begin{figure}[h]
-	\end{figure}
+
+	I have a bug that only affects program 3.
 	
 	\newpage
 	
 	\section{Program4}
 	
 	\begin{figure}[h]
+	\includegraphics[scale=0.7]{p4proposal}
 	\end{figure}
-	
 	\newpage
 		
 	\section{Program5}

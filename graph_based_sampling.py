@@ -10,6 +10,7 @@ from torch.distributions.transforms import CatTransform
 from distributions import *
 import os
 
+
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 from daphne import daphne
@@ -215,8 +216,8 @@ def BBVI(graph,T,L):
             print("norm of gradient:", np.linalg.norm(ghat[v]))
             i = 0
             for params in d.Parameters():
-                params.data = params.data + ghat[v][i]/(t+10) #best for program 1
-                #params.data = params.data + ghat[v][i]/((t+1)*100) #best for program 2
+                #params.data = params.data + ghat[v][i]/(t+10) #best for program 1
+                params.data = params.data + ghat[v][i]/((t+1)*100) #best for program 2
                 #params.data = params.data + ghat[v][i]/((t+1)*100) #best for program 4?
                 #params.data = params.data + ghat[v][i]/((t+1)*10)
                 i = i+1
@@ -281,6 +282,7 @@ def BBVI(graph,T,L):
         Glist = []
         logWlist = []
         ELBOlist = []
+        normgradlist = []
         
         # here we compute a batch of gradients
         for l in range(0,L): # L is the batch size
@@ -300,13 +302,14 @@ def BBVI(graph,T,L):
         ghat = elbo_grad(Glist,logWlist)
 
         sigma['Q'], max_norm = optimizer_step( sigma['Q'],ghat,t) #update the proposal
+        normgradlist.append(max_norm)
         print("results on iteration {} are ".format(t), sigma['Q'])
         print("the max gradient is ", max_norm )
         
 
     print("sigma['Q'] is ",sigma['Q'])
 
-    return weighted_samples, sigma['Q'],ELBOlist
+    return weighted_samples, sigma['Q'],ELBOlist,normgradlist
 
     
     proposal = {**sigma['Q']}
@@ -390,17 +393,17 @@ if __name__ == '__main__':
     
     #T = 60 #for program 1
 
-    T = 100
+    T = 2000
 
     #L = 20000
     #L = 200 #for program 1
-    #L = 2000 #for program 2
-    L = 200 #for program 4?
+    L = 20 #for program 2
+    #L = 200 #for program 4?
 
 
     #graph = daphne(['graph','-i','../HW3/programs/1.daphne'])
-    graph = daphne(['graph','-i','../HW3/programs/2.daphne'])
-    #graph = daphne(['graph','-i','../HW4/programs/4.daphne'])
+    #graph = daphne(['graph','-i','../HW3/programs/2.daphne'])
+    graph = daphne(['graph','-i','../HW4/programs/4.daphne'])
     #graph = daphne(['graph','-i','../HW4/programs/4.daphne'])
     #print(graph)
     print("L is ", L)
@@ -409,7 +412,7 @@ if __name__ == '__main__':
     #samples = BBVI(graph,100,8000)
   
 
-    weighted_samples, proposal, ELBO = BBVI(graph,T,L)
+    weighted_samples, proposal, ELBO, normgradlist = BBVI(graph,T,L)
 
 
     print("proposal is:", proposal)
@@ -419,9 +422,9 @@ if __name__ == '__main__':
     tail = list(weighted_samples)[N:]
     samples, normalized_weights = normalize(tail)
     samples = torch.stack(samples)
-    mean = torch.sum(samples * normalized_weights)
-    variance = torch.sum(samples**2 * normalized_weights) - mean**2
-    print("Mean: ", mean, "Variance: ", variance)
+    #mean = torch.sum(samples * normalized_weights)
+    #variance = torch.sum(samples**2 * normalized_weights) - mean**2
+    #print("Mean: ", mean, "Variance: ", variance)
 
     #figH,axH = plt.subplots()
     #axH.hist(samples)
@@ -429,8 +432,9 @@ if __name__ == '__main__':
 
 
     #fig,ax = plt.subplots()
-    #ax.plot(ELBO)
-    #fig.savefig('../HW4/p1ELBO',dpi = 150)
+    #ax.plot(normgradlist)
+    #fig.savefig('../HW4/p1normgrad',dpi = 150)
+    #plt.show()
 
     #print(weighted_samples)
 
